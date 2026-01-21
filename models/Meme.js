@@ -1,12 +1,31 @@
-import mongoose from "mongoose";
+import express from "express";
+import Meme from "../models/Meme.js";
 
-const memeSchema = new mongoose.Schema({
-  title: String,
-  imageUrl: String,
-  category: String,
-  likes: { type: Number, default: 0 },
-  views: { type: Number, default: 0 },
-  createdAt: { type: Date, default: Date.now }
+const router = express.Router();
+
+// GET all memes
+router.get("/", async (req, res) => {
+  try {
+    const memes = await Meme.find();
+    res.json(memes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-export default mongoose.model("Meme", memeSchema);
+// POST a new meme ✅
+router.post("/", async (req, res) => {
+  try {
+    const meme = new Meme({
+      title: req.body.title,
+      imageUrl: req.body.imageUrl
+    });
+
+    const savedMeme = await meme.save();
+    res.status(201).json(savedMeme);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+export default router;
