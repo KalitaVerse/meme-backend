@@ -3,23 +3,29 @@ import Meme from "../models/Meme.js";
 
 const router = express.Router();
 
+// GET all memes
 router.get("/", async (req, res) => {
-  const memes = await Meme.find().sort({ createdAt: -1 });
-  res.json(memes);
+  try {
+    const memes = await Meme.find();
+    res.json(memes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
-router.post("/like/:id", async (req, res) => {
-  const meme = await Meme.findById(req.params.id);
-  meme.likes++;
-  await meme.save();
-  res.json(meme);
-});
+// POST a new meme ✅
+router.post("/", async (req, res) => {
+  try {
+    const meme = new Meme({
+      title: req.body.title,
+      imageUrl: req.body.imageUrl
+    });
 
-router.post("/view/:id", async (req, res) => {
-  const meme = await Meme.findById(req.params.id);
-  meme.views++;
-  await meme.save();
-  res.json(meme);
+    const savedMeme = await meme.save();
+    res.status(201).json(savedMeme);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
 export default router;
