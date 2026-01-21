@@ -10,9 +10,15 @@ app.use(cors());
 app.use(express.json());
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGO_URI, {
+    serverSelectionTimeoutMS: 5000,
+  })
   .then(() => console.log("MongoDB connected"))
-  .catch(err => console.error(err));
+  .catch(err => {
+    console.error("MongoDB connection error:", err);
+    process.exit(1); // <-- IMPORTANT for Render
+  });
+
 
 import memeRoutes from "./routes/memes.js";
 app.use("/api/memes", memeRoutes);
