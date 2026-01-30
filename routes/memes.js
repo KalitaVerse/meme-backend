@@ -3,17 +3,18 @@ import Meme from "../models/Meme.js";
 
 const router = express.Router();
 
-// GET all memes
+// GET memes
 router.get("/", async (req, res) => {
   try {
-    const memes = await Meme.find();
+    const memes = await Meme.find().sort({ _id: -1 }); 
     res.json(memes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// POST a new meme ✅
+
+// POST MEME
 router.post("/", async (req, res) => {
   try {
     const meme = new Meme({
