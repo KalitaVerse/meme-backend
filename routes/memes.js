@@ -67,5 +67,25 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// LIKE / UPVOTE meme
+router.patch("/:id/like", async (req, res) => {
+  try {
+    const meme = await Meme.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { likes: 1 } },
+      { new: true }
+    );
+
+    if (!meme) {
+      return res.status(404).json({ message: "Meme not found" });
+    }
+
+    res.json(meme);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid meme ID" });
+  }
+});
+
+
 
 export default router;
