@@ -13,10 +13,32 @@ router.get("/", async (req, res) => {
   }
 });
 
+// GET meme by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const meme = await Meme.findById(req.params.id);
+
+    if (!meme) {
+      return res.status(404).json({ message: "Meme not found" });
+    }
+
+    res.json(meme);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid meme ID" });
+  }
+});
+
+
 
 // POST MEME
 router.post("/", async (req, res) => {
   try {
+    if (!req.body.title || !req.body.imageUrl) {
+      return res.status(400).json({
+        error: "Title and imageUrl are required"
+      });
+    }
+
     const meme = new Meme({
       title: req.body.title,
       imageUrl: req.body.imageUrl
@@ -28,6 +50,7 @@ router.post("/", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+
 
 // DELETE memes
 router.delete("/:id", async (req, res) => {
