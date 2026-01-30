@@ -15,7 +15,9 @@ const memeSchema = new mongoose.Schema(
       default: 0
     }
   },
-  { timestamps: true }
+  {
+    timestamps: true   // 👈 STEP 1 IS HERE
+  }
 );
 
 export default mongoose.model("Meme", memeSchema);
