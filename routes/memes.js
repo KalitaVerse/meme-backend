@@ -85,6 +85,18 @@ router.patch("/:id/like", async (req, res) => {
     res.status(400).json({ error: "Invalid meme ID" });
   }
 });
+// GET TRENDING MEMES (most liked first)
+router.get("/trending", async (req, res) => {
+  try {
+    const memes = await Meme.find()
+      .sort({ likes: -1, createdAt: -1 })
+      .limit(20); // top 20 trending
+
+    res.json(memes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 
 
