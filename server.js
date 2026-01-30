@@ -2,6 +2,7 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import memeRoutes from "./routes/memes.js";
 
 dotenv.config();
 
@@ -9,7 +10,14 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔑 IMPORTANT: connect with timeout + fail fast
+app.use("/api/memes", memeRoutes);
+
+// BOOM BOOM
+app.get("/", (req, res) => {
+  res.send("Meme API is running 🚀");
+});
+
+//IMPORTANT: connect with timeout + fail fast
 async function startServer() {
   try {
     await mongoose.connect(process.env.MONGO_URI, {
@@ -24,12 +32,8 @@ async function startServer() {
 
   } catch (err) {
     console.error("MongoDB connection failed:", err);
-    process.exit(1); // 👈 REQUIRED for Render
+    process.exit(1);
   }
 }
 
-import memeRoutes from "./routes/memes.js";
-app.use("/api/memes", memeRoutes);
-
 startServer();
-
