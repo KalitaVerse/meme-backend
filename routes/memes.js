@@ -3,34 +3,36 @@ import Meme from "../models/Meme.js";
 
 const router = express.Router();
 
-// GET memes
+// ==============================
+// GET ALL MEMES (HOME)
+// ==============================
 router.get("/", async (req, res) => {
   try {
-    const memes = await Meme.find().sort({ _id: -1 }); 
+    const memes = await Meme.find().sort({ _id: -1 });
     res.json(memes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// GET meme by ID
-router.get("/:id", async (req, res) => {
+// ==============================
+// GET TRENDING MEMES (🔥 MOST LIKED)
+// ==============================
+router.get("/trending", async (req, res) => {
   try {
-    const meme = await Meme.findById(req.params.id);
+    const memes = await Meme.find()
+      .sort({ likes: -1 })
+      .limit(20);
 
-    if (!meme) {
-      return res.status(404).json({ message: "Meme not found" });
-    }
-
-    res.json(meme);
+    res.json(memes);
   } catch (err) {
-    res.status(400).json({ error: "Invalid meme ID" });
+    res.status(500).json({ error: "Server error" });
   }
 });
 
-
-
+// ==============================
 // POST MEME
+// ==============================
 router.post("/", async (req, res) => {
   try {
     if (!req.body.title || !req.body.imageUrl) {
@@ -51,8 +53,30 @@ router.post("/", async (req, res) => {
   }
 });
 
+// ==============================
+// LIKE A MEME
+// ==============================
+router.patch("/:id/like", async (req, res) => {
+  try {
+    const meme = await Meme.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { likes: 1 } },
+      { new: true }
+    );
 
-// DELETE memes
+    if (!meme) {
+      return res.status(404).json({ error: "Meme not found" });
+    }
+
+    res.json(meme);
+  } catch (err) {
+    res.status(400).json({ error: "Invalid meme ID" });
+  }
+});
+
+// ==============================
+// DELETE MEME
+// ==============================
 router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Meme.findByIdAndDelete(req.params.id);
@@ -67,37 +91,19 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// LIKE / UPVOTE meme
-router.patch("/:id/like", async (req, res) => {
+// ==============================
+// GET SINGLE MEME (⚠️ MUST BE LAST)
+// ==============================
+router.get("/:id", async (req, res) => {
   try {
-    const meme = await Meme.findByIdAndUpdate(
-      req.params.id,
-      { $inc: { likes: 1 } },
-      { new: true }
-    );
-
+    const meme = await Meme.findById(req.params.id);
     if (!meme) {
-      return res.status(404).json({ message: "Meme not found" });
+      return res.status(404).json({ error: "Meme not found" });
     }
-
     res.json(meme);
   } catch (err) {
     res.status(400).json({ error: "Invalid meme ID" });
   }
 });
-// GET TRENDING MEMES (most liked first)
-router.get("/trending", async (req, res) => {
-  try {
-    const memes = await Meme.find()
-      .sort({ likes: -1, createdAt: -1 })
-      .limit(20); // top 20 trending
-
-    res.json(memes);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-
 
 export default router;
