@@ -3,47 +3,51 @@ import Meme from "../models/Meme.js";
 
 const router = express.Router();
 
-// ==============================
-// GET ALL MEMES (HOME)
-// ==============================
+/* =====================================================
+   GET TRENDING MEMES  (🔥 MUST BE FIRST)
+   ===================================================== */
+router.get("/trending", async (req, res) => {
+  try {
+    const memes = await Meme.find()
+      .sort({ likes: -1, createdAt: -1 }) // most liked first
+      .limit(20);
+
+    res.json(memes);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch trending memes" });
+  }
+});
+
+/* =====================================================
+   GET ALL MEMES (HOME)
+   ===================================================== */
 router.get("/", async (req, res) => {
   try {
-    const memes = await Meme.find().sort({ _id: -1 });
+    const memes = await Meme.find().sort({ createdAt: -1 });
     res.json(memes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ==============================
-// GET TRENDING MEMES (🔥 MOST LIKED)
-// ==============================
-router.get("/trending", async (req, res) => {
-  try {
-    const memes = await Meme.find()
-      .sort({ likes: -1 })
-      .limit(20);
-
-    res.json(memes);
-  } catch (err) {
-    res.status(500).json({ error: "Server error" });
-  }
-});
-
-// ==============================
-// POST MEME
-// ==============================
+/* =====================================================
+   POST NEW MEME
+   ===================================================== */
 router.post("/", async (req, res) => {
   try {
-    if (!req.body.title || !req.body.imageUrl) {
+    const { title, imageUrl } = req.body;
+
+    if (!title || !imageUrl) {
       return res.status(400).json({
         error: "Title and imageUrl are required"
       });
     }
 
     const meme = new Meme({
-      title: req.body.title,
-      imageUrl: req.body.imageUrl
+      title,
+      imageUrl,
+      likes: 0
     });
 
     const savedMeme = await meme.save();
@@ -53,9 +57,9 @@ router.post("/", async (req, res) => {
   }
 });
 
-// ==============================
-// LIKE A MEME
-// ==============================
+/* =====================================================
+   LIKE A MEME
+   ===================================================== */
 router.patch("/:id/like", async (req, res) => {
   try {
     const meme = await Meme.findByIdAndUpdate(
@@ -74,15 +78,15 @@ router.patch("/:id/like", async (req, res) => {
   }
 });
 
-// ==============================
-// DELETE MEME
-// ==============================
+/* =====================================================
+   DELETE A MEME
+   ===================================================== */
 router.delete("/:id", async (req, res) => {
   try {
     const deleted = await Meme.findByIdAndDelete(req.params.id);
 
     if (!deleted) {
-      return res.status(404).json({ message: "Meme not found" });
+      return res.status(404).json({ error: "Meme not found" });
     }
 
     res.json({ message: "Meme deleted successfully" });
@@ -91,15 +95,17 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// ==============================
-// GET SINGLE MEME (⚠️ MUST BE LAST)
-// ==============================
+/* =====================================================
+   GET SINGLE MEME (⚠ MUST BE LAST)
+   ===================================================== */
 router.get("/:id", async (req, res) => {
   try {
     const meme = await Meme.findById(req.params.id);
+
     if (!meme) {
       return res.status(404).json({ error: "Meme not found" });
     }
+
     res.json(meme);
   } catch (err) {
     res.status(400).json({ error: "Invalid meme ID" });
