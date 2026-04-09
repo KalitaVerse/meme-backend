@@ -4,12 +4,12 @@ import Meme from "../models/Meme.js";
 const router = express.Router();
 
 /* =====================================================
-   GET TRENDING MEMES  (🔥 MUST BE FIRST)
+   GET TRENDING MEMES  (🔥 MUST BE FIRST — before /:id)
    ===================================================== */
 router.get("/trending", async (req, res) => {
   try {
     const memes = await Meme.find()
-      .sort({ likes: -1, createdAt: -1 }) // most liked first
+      .sort({ likes: -1, createdAt: -1 })
       .limit(20);
 
     res.json(memes);
@@ -20,7 +20,55 @@ router.get("/trending", async (req, res) => {
 });
 
 /* =====================================================
-   GET ALL MEMES (HOME)
+   IMAGES ONLY
+   ===================================================== */
+router.get("/images", async (req, res) => {
+  try {
+    const memes = await Meme.find({ type: "image" }).sort({ createdAt: -1 });
+    res.json(memes);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch images" });
+  }
+});
+
+/* =====================================================
+   VIDEOS ONLY
+   ===================================================== */
+router.get("/videos", async (req, res) => {
+  try {
+    const memes = await Meme.find({ type: "video" }).sort({ createdAt: -1 });
+    res.json(memes);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch videos" });
+  }
+});
+
+/* =====================================================
+   TEMPLATES ONLY
+   ===================================================== */
+router.get("/templates", async (req, res) => {
+  try {
+    const memes = await Meme.find({ type: "template" }).sort({ createdAt: -1 });
+    res.json(memes);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch templates" });
+  }
+});
+
+/* =====================================================
+   SOUNDS ONLY
+   ===================================================== */
+router.get("/sounds", async (req, res) => {
+  try {
+    const memes = await Meme.find({ type: "sound" }).sort({ createdAt: -1 });
+    res.json(memes);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch sounds" });
+  }
+});
+
+/* =====================================================
+   GET ALL MEMES 
    ===================================================== */
 router.get("/", async (req, res) => {
   try {
@@ -33,20 +81,25 @@ router.get("/", async (req, res) => {
 
 /* =====================================================
    POST NEW MEME
+   type defaults to "image" if not provided
    ===================================================== */
 router.post("/", async (req, res) => {
   try {
-    const { title, imageUrl } = req.body;
+    const { title, imageUrl, type } = req.body;
 
     if (!title || !imageUrl) {
       return res.status(400).json({
-        error: "Title and imageUrl are required"
+        error: "title and imageUrl are required"
       });
     }
+
+    const validTypes = ["image", "video", "template", "sound"];
+    const resolvedType = validTypes.includes(type) ? type : "image";
 
     const meme = new Meme({
       title,
       imageUrl,
+      type: resolvedType,
       likes: 0
     });
 
@@ -96,7 +149,7 @@ router.delete("/:id", async (req, res) => {
 });
 
 /* =====================================================
-   GET SINGLE MEME (⚠ MUST BE LAST)
+   GET SINGLE MEME  ( MUST BE LAST — after all named routes)
    ===================================================== */
 router.get("/:id", async (req, res) => {
   try {
