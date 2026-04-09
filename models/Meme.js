@@ -8,7 +8,12 @@ const memeSchema = new mongoose.Schema(
     },
     imageUrl: {
       type: String,
-      required: true
+      required: true       
+    },
+    type: {
+      type: String,
+      enum: ["image", "video", "template", "sound"],
+      default: "image"    
     },
     likes: {
       type: Number,
@@ -16,7 +21,7 @@ const memeSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true   
+    timestamps: true
   }
 );
 
