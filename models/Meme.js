@@ -16,7 +16,7 @@ const memeSchema = new mongoose.Schema(
     }
   },
   {
-    timestamps: true   // 👈 STEP 1 IS HERE
+    timestamps: true   
   }
 );
 
